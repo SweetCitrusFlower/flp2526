@@ -11,7 +11,12 @@ unit c = Condition c Nothing
 {- | The weakest precondition of a statement with respect to a postcondition. -}
 wlp :: Stmt -> Condition -> Condition
 wlp SSkip post = post
-wlp _ _ = error "not implemented"
+wlp (SAss x e) post = Condition (subst (condition post) x e) (goals post)
+wlp (SSeq c1 c2) post = wlp c1 (wlp c2 post)
+wlp (SIf b c1 c2) post = Condition (BOr (BAnd b preC1) (BAnd (BNot b) preC2)) (goals post goalsC1 <> goalsC2) where
+  Condition preC1 goalsC1 = wlp c1 post
+  Condition preC2 goalsC2 = wlp c2 post
+wlp (SWhile b c inv) post = 
 
 {- | The verification condition of a Hoare triple. -}
 verificationCondition :: HoareTriple -> BExpr
